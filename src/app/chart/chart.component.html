@@ -98,8 +98,7 @@
             <g *ngFor="let slice of pieSlices; let i = index" class="pie-slice-group"
                 (mouseenter)="setActivePieIndex(i)" (mouseleave)="setActivePieIndex(-1)">
 
-                <path [attr.d]="activePieIndex === i ? slice.hoverPath : slice.path" [attr.fill]="slice.color"
-                    class="pie-slice">
+                <path [attr.d]="slice.path" [attr.fill]="slice.color" class="pie-slice">
                     <title>{{ slice.name }}: {{ slice.percent }}</title>
                 </path>
 
