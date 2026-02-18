@@ -1,12 +1,17 @@
 <div class="chart-card">
     <h2 class="chart-title">{{ chartOptions?.title }}</h2>
 
+    <!-- Empty state guard -->
+    <div *ngIf="!chartOptions?.series?.length" class="empty-state">
+        No data to display.
+    </div>
+
     <!-- ═══════════════════════════════════════════ Column Chart -->
-    <div *ngIf="chartOptions?.type === 'column'" class="column-chart">
+    <div *ngIf="chartOptions?.type === 'column' && chartOptions?.series?.length" class="column-chart">
         <div class="column-inner">
             <!-- Y-axis -->
             <div class="y-axis">
-                <span *ngFor="let tick of getYTicks().reverse()" class="y-tick">{{ tick }}</span>
+                <span *ngFor="let tick of yTicks.slice().reverse()" class="y-tick">{{ tick }}</span>
             </div>
 
             <!-- Bars -->
@@ -22,8 +27,9 @@
     </div>
 
     <!-- ═══════════════════════════════════════════ Line Chart -->
-    <svg *ngIf="chartOptions?.type === 'line'" class="line-chart" [attr.width]="svgWidth" [attr.height]="svgHeight"
-        [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight">
+    <svg *ngIf="chartOptions?.type === 'line' && chartOptions?.series?.length" class="line-chart"
+        [attr.width]="svgWidth" [attr.height]="svgHeight" [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
+        role="img" [attr.aria-label]="chartOptions.title">
 
         <!-- Gradient definition -->
         <defs>
@@ -33,12 +39,12 @@
             </linearGradient>
         </defs>
 
-        <!-- Grid lines -->
-        <line *ngFor="let tick of getYTicks()" [attr.x1]="padLeft" [attr.x2]="svgWidth - padRight"
-            [attr.y1]="getDotY(tick)" [attr.y2]="getDotY(tick)" class="grid-line" />
+        <!-- Grid lines (using cached yTicks) -->
+        <line *ngFor="let tick of yTicks" [attr.x1]="padLeft" [attr.x2]="svgWidth - padRight" [attr.y1]="getDotY(tick)"
+            [attr.y2]="getDotY(tick)" class="grid-line" />
 
         <!-- Y-axis labels -->
-        <text *ngFor="let tick of getYTicks()" [attr.x]="padLeft - 8" [attr.y]="getDotY(tick) + 4" class="axis-label"
+        <text *ngFor="let tick of yTicks" [attr.x]="padLeft - 8" [attr.y]="getDotY(tick) + 4" class="axis-label"
             text-anchor="end">{{ tick }}</text>
 
         <!-- X-axis line -->
@@ -74,9 +80,9 @@
 
             <!-- Tooltip -->
             <g *ngIf="activeIndex === i" class="dot-tooltip">
-                <rect [attr.x]="getDotX(i) - 36" [attr.y]="getDotY(item.value) - 30" width="72" height="22" rx="5"
+                <rect [attr.x]="getDotX(i) - 40" [attr.y]="getDotY(item.value) - 32" width="80" height="22" rx="5"
                     fill="#1e1b4b" />
-                <text [attr.x]="getDotX(i)" [attr.y]="getDotY(item.value) - 15" class="tooltip-text"
+                <text [attr.x]="getDotX(i)" [attr.y]="getDotY(item.value) - 17" class="tooltip-text"
                     text-anchor="middle">
                     {{ item.name }}: {{ item.value }}
                 </text>
@@ -84,10 +90,9 @@
         </g>
     </svg>
 
-
     <!-- ═══════════════════════════════════════════ Pie Chart -->
-    <div *ngIf="chartOptions?.type === 'pie'" class="pie-wrapper">
-        <svg class="pie-chart" viewBox="0 0 300 300">
+    <div *ngIf="chartOptions?.type === 'pie' && chartOptions?.series?.length" class="pie-wrapper">
+        <svg class="pie-chart" viewBox="0 0 300 300" role="img" [attr.aria-label]="chartOptions.title">
 
             <!-- Slices -->
             <g *ngFor="let slice of getPieSlices(); let i = index" class="pie-slice-group"
@@ -98,7 +103,7 @@
                     <title>{{ slice.name }}: {{ slice.percent }}</title>
                 </path>
 
-                <!-- Percentage label inside slice (only if slice is large enough) -->
+                <!-- Percentage label (only if slice ≥ 8%) -->
                 <text *ngIf="+slice.percent.replace('%','') > 8" [attr.x]="slice.labelX" [attr.y]="slice.labelY + 4"
                     class="pie-label" text-anchor="middle">{{ slice.percent }}</text>
             </g>
@@ -109,7 +114,7 @@
 
             <!-- Hover tooltip -->
             <g *ngIf="activePieIndex >= 0" class="pie-tooltip">
-                <rect x="90" y="260" width="120" height="26" rx="6" fill="#1e1b4b" />
+                <rect x="85" y="260" width="130" height="26" rx="6" fill="#1e1b4b" />
                 <text x="150" y="277" class="tooltip-text" text-anchor="middle">
                     {{ getPieSlices()[activePieIndex]?.name }}: {{ getPieSlices()[activePieIndex]?.percent }}
                 </text>
@@ -118,11 +123,12 @@
     </div>
 
     <!-- ═══════════════════════════════════════════ Legend -->
-    <div class="legend">
+    <div class="legend" *ngIf="chartOptions.series?.length">
         <div *ngFor="let item of chartOptions.series" class="legend-item">
             <span class="legend-dot" [style.background]="item.color"></span>
             <span class="legend-name">{{ item.name }}</span>
             <span class="legend-value">{{ item.value }}</span>
         </div>
     </div>
+
 </div>

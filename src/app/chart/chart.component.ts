@@ -1,40 +1,64 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    Input,
+    OnChanges,
+    SimpleChanges,
+} from '@angular/core';
 import { NgIf, NgFor } from '@angular/common';
-import { ChartOptions, ChartSeries } from './chart.models';
+import { ChartOptions } from './chart.models';
 
+/**
+ * `<io-chart>` — A reusable, standalone Angular chart component.
+ *
+ * Renders Column, Line, or Pie charts from a single `[chartOptions]` input.
+ * Built with pure HTML, CSS, and SVG — no external charting libraries.
+ *
+ * @example
+ * ```html
+ * <io-chart [chartOptions]="{ type: 'column', title: 'Sales', series: [...] }"></io-chart>
+ * ```
+ */
 @Component({
     selector: 'io-chart',
     standalone: true,
     imports: [NgIf, NgFor],
     templateUrl: './chart.component.html',
-    styleUrls: ['./chart.component.scss']
+    styleUrls: ['./chart.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartComponent implements OnChanges {
 
+    /** Chart configuration: type, title, and data series. */
     @Input() chartOptions!: ChartOptions;
 
-    maxValue: number = 0;
-    totalValue: number = 0;
+    /** Maximum value across all series — used for scaling. */
+    maxValue = 0;
 
-    ngOnChanges() {
-        if (this.chartOptions?.series?.length) {
+    /** Sum of all series values — used for pie percentages. */
+    totalValue = 0;
+
+    /** Cached Y-axis tick values, recalculated on input change. */
+    yTicks: number[] = [];
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['chartOptions'] && this.chartOptions?.series?.length) {
             this.maxValue = Math.max(...this.chartOptions.series.map(s => s.value));
-            this.totalValue = this.chartOptions.series.reduce((a, b) => a + b.value, 0);
+            this.totalValue = this.chartOptions.series.reduce((sum, s) => sum + s.value, 0);
+            this.yTicks = this.computeYTicks();
         }
     }
 
-    // ── Column Chart ──────────────────────────────────────────────
+    // ── Column Chart ──────────────────────────────────────────────────────────
+
+    /** Returns the pixel height for a bar, scaled to the max value. */
     getBarHeight(value: number): number {
         if (this.maxValue === 0) return 0;
         return (value / this.maxValue) * 200;
     }
 
-    getBarPercent(value: number): string {
-        if (this.totalValue === 0) return '0%';
-        return ((value / this.totalValue) * 100).toFixed(1) + '%';
-    }
+    // ── Line Chart ────────────────────────────────────────────────────────────
 
-    // ── Line Chart ────────────────────────────────────────────────
     readonly svgWidth = 420;
     readonly svgHeight = 280;
     readonly padLeft = 50;
@@ -42,38 +66,33 @@ export class ChartComponent implements OnChanges {
     readonly padTop = 20;
     readonly padRight = 30;
 
-    activeIndex: number = -1;
+    /** Index of the currently hovered data point (-1 = none). */
+    activeIndex = -1;
 
-    get chartWidth(): number {
-        return this.svgWidth - this.padLeft - this.padRight;
-    }
+    get chartWidth(): number { return this.svgWidth - this.padLeft - this.padRight; }
+    get chartHeight(): number { return this.svgHeight - this.padTop - this.padBottom; }
 
-    get chartHeight(): number {
-        return this.svgHeight - this.padTop - this.padBottom;
-    }
-
+    /** Returns the SVG X coordinate for a data point by index. */
     getDotX(index: number): number {
         const count = this.chartOptions.series.length;
         if (count === 1) return this.padLeft + this.chartWidth / 2;
         return this.padLeft + (index / (count - 1)) * this.chartWidth;
     }
 
+    /** Returns the SVG Y coordinate for a data point by value. */
     getDotY(value: number): number {
         if (this.maxValue === 0) return this.padTop + this.chartHeight;
         return this.padTop + this.chartHeight - (value / this.maxValue) * this.chartHeight;
     }
 
-    getLinePoints(): string {
-        return this.chartOptions.series
-            .map((s, i) => `${this.getDotX(i)},${this.getDotY(s.value)}`)
-            .join(' ');
-    }
-
-    /** Smooth cubic bezier path through all data points */
+    /**
+     * Builds a smooth cubic bezier SVG path through all data points.
+     * Uses midpoint control points for a natural S-curve appearance.
+     */
     getSmoothPath(): string {
         const pts = this.chartOptions.series.map((s, i) => ({
             x: this.getDotX(i),
-            y: this.getDotY(s.value)
+            y: this.getDotY(s.value),
         }));
         if (pts.length < 2) return '';
         let d = `M ${pts[0].x} ${pts[0].y}`;
@@ -86,7 +105,7 @@ export class ChartComponent implements OnChanges {
         return d;
     }
 
-    /** Closed area path for gradient fill under the line */
+    /** Returns a closed SVG path for the gradient area fill under the line. */
     getAreaPath(): string {
         const smooth = this.getSmoothPath();
         if (!smooth) return '';
@@ -95,47 +114,40 @@ export class ChartComponent implements OnChanges {
         return `${smooth} L ${this.getDotX(last)} ${baseY} L ${this.getDotX(0)} ${baseY} Z`;
     }
 
-    getYTicks(): number[] {
-        const steps = 5;
-        return Array.from({ length: steps + 1 }, (_, i) =>
-            Math.round((this.maxValue / steps) * i)
-        );
-    }
+    // ── Pie Chart ─────────────────────────────────────────────────────────────
 
-    // ── Pie Chart ─────────────────────────────────────────────────
     readonly cx = 150;
     readonly cy = 150;
     readonly r = 100;
-    readonly innerR = 55; // donut hole radius
+    readonly innerR = 55;
 
-    activePieIndex: number = -1;
+    /** Index of the currently hovered pie slice (-1 = none). */
+    activePieIndex = -1;
 
-    getPieSlices(): Array<{
-        path: string;
-        hoverPath: string;
-        color: string;
-        name: string;
-        percent: string;
-        labelX: number;
-        labelY: number;
-    }> {
+    /**
+     * Computes all pie slice descriptors from the current series data.
+     * Each slice includes its SVG arc path, hover path, label position, and percentage.
+     */
+    getPieSlices(): PieSlice[] {
         if (!this.chartOptions?.series?.length || this.totalValue === 0) return [];
 
-        const slices: ReturnType<typeof this.getPieSlices> = [];
-        let startAngle = -Math.PI / 2; // start from top
+        const slices: PieSlice[] = [];
+        let startAngle = -Math.PI / 2; // start from 12 o'clock
 
         for (const item of this.chartOptions.series) {
             const fraction = item.value / this.totalValue;
             const endAngle = startAngle + fraction * 2 * Math.PI;
+            const midAngle = (startAngle + endAngle) / 2;
 
             slices.push({
                 path: this.arcPath(startAngle, endAngle, this.r),
                 hoverPath: this.arcPath(startAngle, endAngle, this.r + 8),
                 color: item.color,
                 name: item.name,
+                value: item.value,
                 percent: (fraction * 100).toFixed(1) + '%',
-                labelX: this.cx + Math.cos((startAngle + endAngle) / 2) * (this.r * 0.65),
-                labelY: this.cy + Math.sin((startAngle + endAngle) / 2) * (this.r * 0.65),
+                labelX: this.cx + Math.cos(midAngle) * (this.r * 0.65),
+                labelY: this.cy + Math.sin(midAngle) * (this.r * 0.65),
             });
 
             startAngle = endAngle;
@@ -143,29 +155,43 @@ export class ChartComponent implements OnChanges {
         return slices;
     }
 
+    /**
+     * Builds a donut arc SVG path between two angles.
+     * The path traces the outer arc, then the inner arc in reverse to form a ring segment.
+     */
     private arcPath(startAngle: number, endAngle: number, radius: number): string {
-        const x1 = this.cx + Math.cos(startAngle) * radius;
-        const y1 = this.cy + Math.sin(startAngle) * radius;
-        const x2 = this.cx + Math.cos(endAngle) * radius;
-        const y2 = this.cy + Math.sin(endAngle) * radius;
-        const x1i = this.cx + Math.cos(startAngle) * this.innerR;
-        const y1i = this.cy + Math.sin(startAngle) * this.innerR;
-        const x2i = this.cx + Math.cos(endAngle) * this.innerR;
-        const y2i = this.cy + Math.sin(endAngle) * this.innerR;
+        const cos1 = Math.cos(startAngle), sin1 = Math.sin(startAngle);
+        const cos2 = Math.cos(endAngle), sin2 = Math.sin(endAngle);
         const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
 
         return [
-            `M ${x1} ${y1}`,
-            `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-            `L ${x2i} ${y2i}`,
-            `A ${this.innerR} ${this.innerR} 0 ${largeArc} 0 ${x1i} ${y1i}`,
-            'Z'
+            `M ${this.cx + cos1 * radius} ${this.cy + sin1 * radius}`,
+            `A ${radius} ${radius} 0 ${largeArc} 1 ${this.cx + cos2 * radius} ${this.cy + sin2 * radius}`,
+            `L ${this.cx + cos2 * this.innerR} ${this.cy + sin2 * this.innerR}`,
+            `A ${this.innerR} ${this.innerR} 0 ${largeArc} 0 ${this.cx + cos1 * this.innerR} ${this.cy + sin1 * this.innerR}`,
+            'Z',
         ].join(' ');
     }
 
-    getPiePercent(value: number): string {
-        if (this.totalValue === 0) return '0%';
-        return ((value / this.totalValue) * 100).toFixed(1) + '%';
+    // ── Shared Helpers ────────────────────────────────────────────────────────
+
+    /** Computes 6 evenly-spaced Y-axis tick values from 0 to maxValue. */
+    private computeYTicks(): number[] {
+        const steps = 5;
+        return Array.from({ length: steps + 1 }, (_, i) =>
+            Math.round((this.maxValue / steps) * i)
+        );
     }
 }
 
+/** Descriptor for a single pie/donut chart slice. */
+export interface PieSlice {
+    path: string;
+    hoverPath: string;
+    color: string;
+    name: string;
+    value: number;
+    percent: string;
+    labelX: number;
+    labelY: number;
+}
