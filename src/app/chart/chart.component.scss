@@ -1,0 +1,367 @@
+// ─── Chart Card ───────────────────────────────────────────────────────────────
+.chart-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 8px 32px rgba(99, 102, 241, 0.10),
+        0 0 0 1px var(--border);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+
+    // Top gradient accent line
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1, #a78bfa, #7c3aed);
+        border-radius: 20px 20px 0 0;
+    }
+}
+
+.chart-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1.75rem;
+    text-align: center;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #a78bfa);
+        flex-shrink: 0;
+    }
+}
+
+// ─── Column Chart ─────────────────────────────────────────────────────────────
+.column-chart {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.column-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    min-width: 300px;
+}
+
+.y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 28px; // align with bar labels
+    min-width: 36px;
+    text-align: right;
+    padding-right: 8px;
+}
+
+.y-tick {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.bars-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1;
+    height: 260px;
+    padding-bottom: 28px; // space for x-axis labels
+    position: relative;
+
+    // Horizontal grid lines
+    background-image: repeating-linear-gradient(to top,
+            transparent,
+            transparent calc(20% - 1px),
+            #e5e7eb calc(20% - 1px),
+            #e5e7eb 20%);
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+
+    &:hover .bar {
+        filter: brightness(1.15);
+        transform: scaleY(1.03);
+        transform-origin: bottom;
+    }
+
+    &:hover .bar-tooltip {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}
+
+.bar-value {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    transition: color 0.2s;
+
+    .bar-group:hover & {
+        color: var(--text);
+    }
+}
+
+.bar {
+    width: 100%;
+    max-width: 52px;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: growBar 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    position: relative;
+}
+
+@keyframes growBar {
+    from {
+        transform: scaleY(0);
+        transform-origin: bottom;
+    }
+
+    to {
+        transform: scaleY(1);
+        transform-origin: bottom;
+    }
+}
+
+.bar-tooltip {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: #1e1b4b;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 4px solid transparent;
+        border-top-color: #1e1b4b;
+    }
+}
+
+.bar-label {
+    position: absolute;
+    bottom: -22px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+// ─── Line Chart ───────────────────────────────────────────────────────────────
+.line-chart {
+    display: block;
+    width: 100%;
+    overflow: visible;
+}
+
+.grid-line {
+    stroke: #e5e7eb;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+}
+
+.axis-line {
+    stroke: #d1d5db;
+    stroke-width: 1.5;
+}
+
+.axis-label {
+    font-size: 11px;
+    fill: #9ca3af;
+    font-family: 'Inter', sans-serif;
+}
+
+.line-path {
+    animation: drawLine 1s ease both;
+}
+
+@keyframes drawLine {
+    from {
+        stroke-dashoffset: 1000;
+        stroke-dasharray: 1000;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+        stroke-dasharray: 1000;
+    }
+}
+
+.area-fill {
+    animation: fadeIn 0.8s ease both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.dot-group {
+    cursor: pointer;
+}
+
+.dot {
+    transition: r 0.15s ease;
+}
+
+.hover-line {
+    stroke: #6366f1;
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    opacity: 0.4;
+}
+
+.tooltip-text {
+    font-size: 10px;
+    fill: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+// ─── Pie Chart ────────────────────────────────────────────────────────────────
+.pie-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.pie-chart {
+    width: 280px;
+    height: 280px;
+    display: block;
+    overflow: visible;
+}
+
+.pie-slice-group {
+    cursor: pointer;
+}
+
+.pie-slice {
+    transition: d 0.2s ease, filter 0.2s ease;
+    animation: fadeIn 0.6s ease both;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+
+    &:hover {
+        filter: brightness(1.1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+}
+
+.pie-label {
+    font-size: 11px;
+    fill: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.pie-center-label {
+    font-size: 11px;
+    fill: #9ca3af;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.pie-center-value {
+    font-size: 20px;
+    fill: #1e1b4b;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+}
+
+.pie-tooltip {
+    pointer-events: none;
+}
+
+// ─── Legend ───────────────────────────────────────────────────────────────────
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-name {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.legend-value {
+    color: var(--text);
+    font-weight: 600;
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 480px) {
+    .chart-card {
+        padding: 1.25rem;
+        border-radius: 14px;
+    }
+
+    .bars-area {
+        gap: 10px;
+    }
+
+    .pie-chart {
+        width: 200px;
+        height: 200px;
+    }
+}

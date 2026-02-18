@@ -1,0 +1,128 @@
+<div class="chart-card">
+    <h2 class="chart-title">{{ chartOptions?.title }}</h2>
+
+    <!-- ═══════════════════════════════════════════ Column Chart -->
+    <div *ngIf="chartOptions?.type === 'column'" class="column-chart">
+        <div class="column-inner">
+            <!-- Y-axis -->
+            <div class="y-axis">
+                <span *ngFor="let tick of getYTicks().reverse()" class="y-tick">{{ tick }}</span>
+            </div>
+
+            <!-- Bars -->
+            <div class="bars-area">
+                <div *ngFor="let item of chartOptions.series" class="bar-group">
+                    <div class="bar-value">{{ item.value }}</div>
+                    <div class="bar" [style.height.px]="getBarHeight(item.value)" [style.background]="item.color"></div>
+                    <div class="bar-tooltip">{{ item.name }}: {{ item.value }}</div>
+                    <span class="bar-label">{{ item.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ Line Chart -->
+    <svg *ngIf="chartOptions?.type === 'line'" class="line-chart" [attr.width]="svgWidth" [attr.height]="svgHeight"
+        [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight">
+
+        <!-- Gradient definition -->
+        <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+            </linearGradient>
+        </defs>
+
+        <!-- Grid lines -->
+        <line *ngFor="let tick of getYTicks()" [attr.x1]="padLeft" [attr.x2]="svgWidth - padRight"
+            [attr.y1]="getDotY(tick)" [attr.y2]="getDotY(tick)" class="grid-line" />
+
+        <!-- Y-axis labels -->
+        <text *ngFor="let tick of getYTicks()" [attr.x]="padLeft - 8" [attr.y]="getDotY(tick) + 4" class="axis-label"
+            text-anchor="end">{{ tick }}</text>
+
+        <!-- X-axis line -->
+        <line [attr.x1]="padLeft" [attr.x2]="svgWidth - padRight" [attr.y1]="padTop + chartHeight"
+            [attr.y2]="padTop + chartHeight" class="axis-line" />
+
+        <!-- Y-axis line -->
+        <line [attr.x1]="padLeft" [attr.x2]="padLeft" [attr.y1]="padTop" [attr.y2]="padTop + chartHeight"
+            class="axis-line" />
+
+        <!-- Area fill under the line -->
+        <path [attr.d]="getAreaPath()" fill="url(#areaGradient)" class="area-fill" />
+
+        <!-- Smooth bezier line -->
+        <path [attr.d]="getSmoothPath()" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linejoin="round"
+            stroke-linecap="round" class="line-path" />
+
+        <!-- Data points with hover tooltip -->
+        <g *ngFor="let item of chartOptions.series; let i = index" class="dot-group" (mouseenter)="activeIndex = i"
+            (mouseleave)="activeIndex = -1">
+
+            <!-- X-axis label -->
+            <text [attr.x]="getDotX(i)" [attr.y]="padTop + chartHeight + 20" class="axis-label" text-anchor="middle">{{
+                item.name }}</text>
+
+            <!-- Vertical hover line -->
+            <line *ngIf="activeIndex === i" [attr.x1]="getDotX(i)" [attr.x2]="getDotX(i)" [attr.y1]="padTop"
+                [attr.y2]="padTop + chartHeight" class="hover-line" />
+
+            <!-- Dot -->
+            <circle [attr.cx]="getDotX(i)" [attr.cy]="getDotY(item.value)" [attr.r]="activeIndex === i ? 7 : 5"
+                [attr.fill]="item.color" stroke="#fff" stroke-width="2" class="dot" />
+
+            <!-- Tooltip -->
+            <g *ngIf="activeIndex === i" class="dot-tooltip">
+                <rect [attr.x]="getDotX(i) - 36" [attr.y]="getDotY(item.value) - 30" width="72" height="22" rx="5"
+                    fill="#1e1b4b" />
+                <text [attr.x]="getDotX(i)" [attr.y]="getDotY(item.value) - 15" class="tooltip-text"
+                    text-anchor="middle">
+                    {{ item.name }}: {{ item.value }}
+                </text>
+            </g>
+        </g>
+    </svg>
+
+
+    <!-- ═══════════════════════════════════════════ Pie Chart -->
+    <div *ngIf="chartOptions?.type === 'pie'" class="pie-wrapper">
+        <svg class="pie-chart" viewBox="0 0 300 300">
+
+            <!-- Slices -->
+            <g *ngFor="let slice of getPieSlices(); let i = index" class="pie-slice-group"
+                (mouseenter)="activePieIndex = i" (mouseleave)="activePieIndex = -1">
+
+                <path [attr.d]="activePieIndex === i ? slice.hoverPath : slice.path" [attr.fill]="slice.color"
+                    class="pie-slice">
+                    <title>{{ slice.name }}: {{ slice.percent }}</title>
+                </path>
+
+                <!-- Percentage label inside slice (only if slice is large enough) -->
+                <text *ngIf="+slice.percent.replace('%','') > 8" [attr.x]="slice.labelX" [attr.y]="slice.labelY + 4"
+                    class="pie-label" text-anchor="middle">{{ slice.percent }}</text>
+            </g>
+
+            <!-- Center hole label -->
+            <text x="150" y="145" class="pie-center-label" text-anchor="middle">Total</text>
+            <text x="150" y="165" class="pie-center-value" text-anchor="middle">{{ totalValue }}</text>
+
+            <!-- Hover tooltip -->
+            <g *ngIf="activePieIndex >= 0" class="pie-tooltip">
+                <rect x="90" y="260" width="120" height="26" rx="6" fill="#1e1b4b" />
+                <text x="150" y="277" class="tooltip-text" text-anchor="middle">
+                    {{ getPieSlices()[activePieIndex]?.name }}: {{ getPieSlices()[activePieIndex]?.percent }}
+                </text>
+            </g>
+        </svg>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ Legend -->
+    <div class="legend">
+        <div *ngFor="let item of chartOptions.series" class="legend-item">
+            <span class="legend-dot" [style.background]="item.color"></span>
+            <span class="legend-name">{{ item.name }}</span>
+            <span class="legend-value">{{ item.value }}</span>
+        </div>
+    </div>
+</div>

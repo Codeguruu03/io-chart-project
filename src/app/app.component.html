@@ -1,0 +1,40 @@
+<div class="app-shell">
+
+    <!-- Decorative background blobs -->
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="app-logo">
+            <span class="logo-icon">◈</span>
+            <h1 class="app-title">io-chart</h1>
+        </div>
+        <p class="app-subtitle">Custom Angular Chart Component · No external libraries</p>
+        <div class="app-badge-row">
+            <span class="badge">Angular 21</span>
+            <span class="badge">SVG</span>
+            <span class="badge">TypeScript</span>
+        </div>
+    </header>
+
+    <!-- Chart Type Switcher -->
+    <div class="type-switcher" role="group" aria-label="Chart type selector">
+        <button *ngFor="let type of chartTypes" class="type-btn" [class.active]="activeType === type"
+            (click)="setType(type)" [attr.aria-pressed]="activeType === type">
+            <span class="type-icon">{{ getIcon(type) }}</span>
+            <span>{{ type | titlecase }}</span>
+        </button>
+    </div>
+
+    <!-- Chart -->
+    <main class="chart-area">
+        <io-chart [chartOptions]="options"></io-chart>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        Built with Angular · No chart libraries used
+    </footer>
+
+</div>
