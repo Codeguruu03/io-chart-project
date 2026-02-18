@@ -95,7 +95,7 @@
         <svg class="pie-chart" viewBox="0 0 300 300" role="img" [attr.aria-label]="chartOptions.title">
 
             <!-- Slices -->
-            <g *ngFor="let slice of getPieSlices(); let i = index" class="pie-slice-group"
+            <g *ngFor="let slice of pieSlices; let i = index" class="pie-slice-group"
                 (mouseenter)="setActivePieIndex(i)" (mouseleave)="setActivePieIndex(-1)">
 
                 <path [attr.d]="activePieIndex === i ? slice.hoverPath : slice.path" [attr.fill]="slice.color"
@@ -116,7 +116,7 @@
             <g *ngIf="activePieIndex >= 0" class="pie-tooltip">
                 <rect x="85" y="260" width="130" height="26" rx="6" fill="#1e1b4b" />
                 <text x="150" y="277" class="tooltip-text" text-anchor="middle">
-                    {{ getPieSlices()[activePieIndex]?.name }}: {{ getPieSlices()[activePieIndex]?.percent }}
+                    {{ pieSlices[activePieIndex]?.name }}: {{ pieSlices[activePieIndex]?.percent }}
                 </text>
             </g>
         </svg>

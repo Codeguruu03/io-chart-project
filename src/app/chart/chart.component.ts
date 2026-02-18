@@ -45,11 +45,15 @@ export class ChartComponent implements OnChanges {
     /** Cached Y-axis tick values, recalculated on input change. */
     yTicks: number[] = [];
 
+    /** Cached pie slice descriptors, recalculated on input change. */
+    pieSlices: PieSlice[] = [];
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['chartOptions'] && this.chartOptions?.series?.length) {
             this.maxValue = Math.max(...this.chartOptions.series.map(s => s.value));
             this.totalValue = this.chartOptions.series.reduce((sum, s) => sum + s.value, 0);
             this.yTicks = this.computeYTicks();
+            this.pieSlices = this.computePieSlices();
         }
     }
 
@@ -134,9 +138,9 @@ export class ChartComponent implements OnChanges {
 
     /**
      * Computes all pie slice descriptors from the current series data.
-     * Each slice includes its SVG arc path, hover path, label position, and percentage.
+     * Called once in ngOnChanges and cached in `pieSlices`.
      */
-    getPieSlices(): PieSlice[] {
+    private computePieSlices(): PieSlice[] {
         if (!this.chartOptions?.series?.length || this.totalValue === 0) return [];
 
         const slices: PieSlice[] = [];
