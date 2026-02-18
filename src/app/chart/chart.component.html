@@ -63,8 +63,8 @@
             stroke-linecap="round" class="line-path" />
 
         <!-- Data points with hover tooltip -->
-        <g *ngFor="let item of chartOptions.series; let i = index" class="dot-group" (mouseenter)="activeIndex = i"
-            (mouseleave)="activeIndex = -1">
+        <g *ngFor="let item of chartOptions.series; let i = index" class="dot-group" (mouseenter)="setActiveIndex(i)"
+            (mouseleave)="setActiveIndex(-1)">
 
             <!-- X-axis label -->
             <text [attr.x]="getDotX(i)" [attr.y]="padTop + chartHeight + 20" class="axis-label" text-anchor="middle">{{
@@ -96,7 +96,7 @@
 
             <!-- Slices -->
             <g *ngFor="let slice of getPieSlices(); let i = index" class="pie-slice-group"
-                (mouseenter)="activePieIndex = i" (mouseleave)="activePieIndex = -1">
+                (mouseenter)="setActivePieIndex(i)" (mouseleave)="setActivePieIndex(-1)">
 
                 <path [attr.d]="activePieIndex === i ? slice.hoverPath : slice.path" [attr.fill]="slice.color"
                     class="pie-slice">

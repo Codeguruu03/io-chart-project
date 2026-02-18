@@ -1,9 +1,11 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     Input,
     OnChanges,
     SimpleChanges,
+    inject,
 } from '@angular/core';
 import { NgIf, NgFor } from '@angular/common';
 import { ChartOptions } from './chart.models';
@@ -28,6 +30,8 @@ import { ChartOptions } from './chart.models';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartComponent implements OnChanges {
+
+    private readonly cdr = inject(ChangeDetectorRef);
 
     /** Chart configuration: type, title, and data series. */
     @Input() chartOptions!: ChartOptions;
@@ -67,7 +71,9 @@ export class ChartComponent implements OnChanges {
     readonly padRight = 30;
 
     /** Index of the currently hovered data point (-1 = none). */
-    activeIndex = -1;
+    private _activeIndex = -1;
+    get activeIndex(): number { return this._activeIndex; }
+    setActiveIndex(i: number): void { this._activeIndex = i; this.cdr.markForCheck(); }
 
     get chartWidth(): number { return this.svgWidth - this.padLeft - this.padRight; }
     get chartHeight(): number { return this.svgHeight - this.padTop - this.padBottom; }
@@ -122,7 +128,9 @@ export class ChartComponent implements OnChanges {
     readonly innerR = 55;
 
     /** Index of the currently hovered pie slice (-1 = none). */
-    activePieIndex = -1;
+    private _activePieIndex = -1;
+    get activePieIndex(): number { return this._activePieIndex; }
+    setActivePieIndex(i: number): void { this._activePieIndex = i; this.cdr.markForCheck(); }
 
     /**
      * Computes all pie slice descriptors from the current series data.
