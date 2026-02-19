@@ -1,60 +1,51 @@
-# io-chart
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-21-dd0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular"/>
+  <img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Charts-SVG%20%2B%20CSS-f97316?style=for-the-badge&logo=svg&logoColor=white" alt="SVG"/>
+  <img src="https://img.shields.io/badge/Libraries-Zero-22c55e?style=for-the-badge" alt="Zero Libraries"/>
+  <img src="https://img.shields.io/badge/OnPush-Change%20Detection-6366f1?style=for-the-badge&logo=angular&logoColor=white" alt="OnPush"/>
+</p>
 
-> A custom, reusable Angular chart component — built with **zero external charting libraries**.
+<h1 align="center">📊 io-chart</h1>
 
-[![Angular](https://img.shields.io/badge/Angular-21-dd0031?logo=angular)](https://angular.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org)
-[![SVG](https://img.shields.io/badge/Charts-SVG%20%2B%20CSS-orange)](https://developer.mozilla.org/en-US/docs/Web/SVG)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-
----
-
-## Overview
-
-`io-chart` is a standalone Angular component (`<io-chart>`) that renders three chart types — **Column**, **Line**, and **Pie** — using only HTML, CSS, and SVG. It accepts a single `[chartOptions]` input and handles all rendering internally.
-
----
-
-## Screenshots
-
-| Column Chart | Line Chart | Pie Chart |
-|---|---|---|
-| *(run `ng serve` to view)* | *(run `ng serve` to view)* | *(run `ng serve` to view)* |
-
-> Open `http://localhost:4200` and use the chart type switcher to see all three chart types.
+<p align="center">
+  A reusable, standalone Angular chart component — built with <strong>zero external charting libraries</strong>.<br/>
+  Drop it in. Pass data. Get beautiful charts.
+</p>
 
 ---
 
-## Features
+## ✨ Features
 
-- ✅ **3 chart types** — Column, Line, Pie (Donut)
-- ✅ **Zero external libraries** — pure Angular + SVG + CSS
-- ✅ **Reusable component** — single `[chartOptions]` input
-- ✅ **Hover tooltips** — on bars, line dots, and pie slices
-- ✅ **Animations** — bars grow up, line draws in, pie fades in
-- ✅ **Color-coded legend** — name + value for each series
-- ✅ **Responsive** — adapts to mobile screen sizes
-- ✅ **Premium UI** — gradient accents, animated background, Inter font
+- **3 Chart Types** — Column, Line (bezier), Pie (donut arc)
+- **Single Input API** — one `[chartOptions]` object drives everything
+- **Zero Dependencies** — pure Angular + SVG + CSS, no Chart.js, no D3
+- **OnPush Change Detection** — performant by default
+- **Hover Tooltips** — on bars, line dots, and pie slices
+- **Animated** — bars grow up, line draws in, pie fades in on load
+- **Legend** — auto-generated color-coded legend per chart
+- **Responsive** — mobile-friendly with CSS breakpoints
+- **Accessible** — ARIA `role` and `aria-label` on all SVG elements
 
 ---
 
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js ≥ 18
-- Angular CLI ≥ 21
+- [Node.js](https://nodejs.org/) v18+
+- [Angular CLI](https://angular.dev/tools/cli) v21+
 
 ```bash
 npm install -g @angular/cli
 ```
 
-### Install & Run
+### Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/Codeguruu03/io-chart-project.git
-cd io-chart-project/io-chart-project
+cd io-chart-project
 
 # Install dependencies
 npm install
@@ -67,27 +58,29 @@ Open your browser at **http://localhost:4200**
 
 ---
 
-## Usage
+## 📦 Usage
 
-Import and use the `<io-chart>` component anywhere in your Angular app:
+Import `ChartComponent` into any standalone Angular component:
 
 ```typescript
+import { Component } from '@angular/core';
 import { ChartComponent } from './chart/chart.component';
 import { ChartOptions } from './chart/chart.models';
 
 @Component({
   standalone: true,
   imports: [ChartComponent],
-  template: `<io-chart [chartOptions]="myOptions"></io-chart>`
+  template: `<io-chart [chartOptions]="options"></io-chart>`
 })
 export class MyComponent {
-  myOptions: ChartOptions = {
+  options: ChartOptions = {
     type: 'column',
-    title: 'Monthly Sales',
+    title: 'Monthly Revenue',
     series: [
       { name: 'Jan', value: 120, color: '#6366f1' },
       { name: 'Feb', value: 85,  color: '#a78bfa' },
       { name: 'Mar', value: 200, color: '#7c3aed' },
+      { name: 'Apr', value: 160, color: '#8b5cf6' },
     ]
   };
 }
@@ -95,139 +88,169 @@ export class MyComponent {
 
 ---
 
-## ChartOptions API
+## 📐 API Reference
+
+### `<io-chart>` Inputs
+
+| Input | Type | Required | Description |
+|---|---|---|---|
+| `chartOptions` | `ChartOptions` | ✅ | Complete chart configuration object |
+
+### `ChartOptions`
 
 ```typescript
 interface ChartOptions {
-  type:   'column' | 'line' | 'pie';  // Chart type
-  title:  string;                      // Chart heading
+  type:   'line' | 'column' | 'pie';  // Chart type to render
+  title:  string;                      // Displayed above the chart
   series: ChartSeries[];               // Data points
 }
+```
 
+### `ChartSeries`
+
+```typescript
 interface ChartSeries {
-  name:  string;   // Label for this data point
-  value: number;   // Numeric value
-  color: string;   // CSS color (hex, rgb, hsl, etc.)
+  name:  string;   // Label shown on axes, legend, and tooltips
+  value: number;   // Numeric value — drives bar height / line Y / pie slice size
+  color: string;   // CSS color (hex, rgb, hsl, named — anything works)
 }
 ```
 
-### Input
+### Example Input — All Chart Types
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `chartOptions` | `ChartOptions` | ✅ | All chart configuration |
-| `chartOptions.type` | `'column' \| 'line' \| 'pie'` | ✅ | Which chart to render |
-| `chartOptions.title` | `string` | ✅ | Title displayed above the chart |
-| `chartOptions.series` | `ChartSeries[]` | ✅ | Array of data points |
+```typescript
+// Column Chart
+{ type: 'column', title: 'Sales Q1', series: [
+  { name: 'Jan', value: 120, color: '#6366f1' },
+  { name: 'Feb', value: 85,  color: '#a78bfa' },
+]}
+
+// Line Chart
+{ type: 'line', title: 'User Growth', series: [
+  { name: 'Week 1', value: 30,  color: '#6366f1' },
+  { name: 'Week 2', value: 70,  color: '#6366f1' },
+  { name: 'Week 3', value: 120, color: '#6366f1' },
+]}
+
+// Pie / Donut Chart
+{ type: 'pie', title: 'Traffic Sources', series: [
+  { name: 'Organic', value: 60, color: '#6366f1' },
+  { name: 'Paid',    value: 25, color: '#a78bfa' },
+  { name: 'Direct',  value: 15, color: '#7c3aed' },
+]}
+```
 
 ---
 
-## Chart Types
+## 📊 Chart Types
 
 ### Column Chart
-Vertical bars scaled to the maximum value. Features:
-- Animated bar grow on load
-- Value label above each bar
-- X-axis labels (series names)
-- Y-axis with 6 scale ticks
+Vertical bars scaled proportionally to the maximum value.
+
+- Dynamic bar height: `barHeight = (value / maxValue) × 200px`
+- Y-axis with 6 evenly-spaced tick labels
 - Dashed horizontal grid lines
-- Hover tooltip + brightness effect
+- Value label above each bar
+- Hover → brightness boost + value tooltip
 
 ### Line Chart
-SVG smooth bezier curve through all data points. Features:
-- Smooth cubic bezier path (not jagged polyline)
-- Gradient area fill under the line
-- X and Y axes with labels
-- Dashed grid lines
+Smooth cubic bezier curve connecting all data points.
+
+- **Smooth path** using midpoint control points — not a jagged polyline:
+  ```
+  C (cpX, prev.y), (cpX, curr.y), (curr.x, curr.y)
+  ```
+- Gradient area fill under the line (SVG `linearGradient`)
+- X and Y axes with tick labels
 - Colored dots at each data point
-- Hover: vertical indicator line + SVG tooltip
+- Hover → vertical indicator line + tooltip popup
 
-### Pie Chart (Donut)
-SVG arc path donut chart. Features:
-- Mathematically precise arc segments (no overlap)
+### Pie / Donut Chart
+Mathematically precise arc segments using SVG arc commands.
+
+- **Arc math** — each slice is a proper donut path:
+  ```
+  M (outer start) → A (outer arc) → L (inner end) → A (inner arc reversed) → Z
+  ```
+- Large arc flag determines which way the arc sweeps: `largeArc = angle > π ? 1 : 0`
 - Donut hole with total value in center
-- Hover: slice expands outward
-- Percentage labels inside each slice (if ≥ 8%)
-- Hover tooltip at bottom of chart
+- Hover → CSS `transform: scale(1.05)` on the slice group
+- Percentage labels inside slices ≥ 8%
 
 ---
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
-io-chart-project/
-└── src/
-    ├── styles.scss                  # Global CSS variables & reset
-    ├── main.ts                      # Bootstrap AppComponent
-    └── app/
-        ├── app.component.ts         # Root component + sample data
-        ├── app.component.html       # App shell + chart switcher
-        ├── app.component.scss       # App shell styles
-        └── chart/
-            ├── chart.component.ts   # Chart logic & SVG helpers
-            ├── chart.component.html # Chart templates (column/line/pie)
-            ├── chart.component.scss # Chart styles & animations
-            └── chart.models.ts      # ChartOptions & ChartSeries interfaces
-```
-
----
-
-## Implementation Details
-
-### No External Libraries
-All chart rendering is done with:
-- **HTML `<div>`** for the column chart bars
-- **SVG `<path>`** with cubic bezier commands for the line chart
-- **SVG `<path>`** with arc commands (`A`) for the pie chart
-- **CSS animations** (`@keyframes`) for all transitions
-
-### Key Algorithms
-
-**Column bar height:**
-```typescript
-getBarHeight(value: number): number {
-  return (value / this.maxValue) * 200; // 200px max height
-}
-```
-
-**Smooth bezier line:**
-```typescript
-// Midpoint control points for smooth S-curve
-const cpX = (prev.x + curr.x) / 2;
-d += ` C ${cpX} ${prev.y}, ${cpX} ${curr.y}, ${curr.x} ${curr.y}`;
-```
-
-**Pie arc path:**
-```typescript
-// SVG arc: M startX startY A radius radius 0 largeArc 1 endX endY
-// Donut: close path through inner radius arc
+src/
+├── styles.scss                    # Global CSS variables & design tokens
+├── main.ts                        # Bootstrap entry point
+└── app/
+    ├── app.component.ts           # Root component — sample data & type switcher
+    ├── app.component.html         # App shell template
+    ├── app.component.scss         # App shell styles & animations
+    └── chart/
+        ├── chart.component.ts     # All chart logic & SVG math helpers
+        ├── chart.component.html   # SVG templates for all 3 chart types
+        ├── chart.component.scss   # Chart styles, animations, hover effects
+        └── chart.models.ts        # ChartOptions & ChartSeries interfaces
 ```
 
 ---
 
-## Evaluation Criteria Mapping
+## 🧠 Design Decisions
 
-| Criterion | Points | Implementation |
+### Why `ChangeDetectionStrategy.OnPush`?
+Angular's default change detection checks every component on every event. `OnPush` restricts re-renders to only when `@Input()` references change — making the component performant at scale. Mouse events trigger `ChangeDetectorRef.markForCheck()` explicitly.
+
+### Why cache `pieSlices` in `ngOnChanges`?
+Calling `getPieSlices()` inside an `*ngFor` in the template means Angular recomputes all slice objects on every render cycle. When `activePieIndex` changes (on hover), this would recreate DOM nodes mid-hover, firing `mouseleave` immediately — causing slices to flicker/disappear. Caching slices as a property removes this entirely.
+
+### Why SVG `transform: scale` for pie hover, not path swapping?
+`transition: d` (animating SVG `d` attribute changes) is **not supported** in most browsers. Swapping the path `d` attribute on hover causes the element to disappear during the transition. CSS `transform: scale(1.05)` on the `<g>` group is GPU-accelerated and works across all browsers.
+
+### Why cubic bezier for the line chart?
+A standard `<polyline>` produces sharp angles at each data point. Cubic bezier curves with midpoint control points produce a smooth, natural-looking curve with zero overshoot — matching professional charting tools.
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| **Angular 21** | Component framework |
+| **TypeScript 5** | Type-safe data models and logic |
+| **SVG** | Chart rendering (paths, arcs, lines, text) |
+| **SCSS** | Component styles, animations, CSS variables |
+| **Inter** | Typography (Google Fonts) |
+
+---
+
+## 📝 Scripts
+
+```bash
+ng serve        # Start dev server at localhost:4200
+ng build        # Production build to dist/
+ng test         # Run unit tests
+ng build --watch  # Dev build with file watching
+```
+
+---
+
+## 📸 Screenshots
+
+| Column Chart | Line Chart | Pie / Donut Chart |
 |---|---|---|
-| **Angular Usage** | 20 | Standalone components, `@Input`, `OnChanges`, `NgFor`, `NgIf`, `TitleCasePipe` |
-| **Chart Logic** | 25 | All 3 types: correct bar scaling, bezier line, arc pie — pure SVG/HTML |
-| **Reusability** | 20 | Single `<io-chart [chartOptions]="...">` API, typed interfaces |
-| **UI/CSS** | 15 | Animations, hover effects, gradient accents, responsive, Inter font |
-| **Code Quality** | 10 | TypeScript interfaces, private helpers, clean separation of concerns |
-| **Documentation** | 10 | This README with API docs, usage examples, project structure |
+| ![Column](screenshots/column.png) | ![Line](screenshots/line.png) | ![Pie](screenshots/pie.png) |
 
 ---
 
-## Built With
+## 📄 License
 
-- [Angular 21](https://angular.dev) — Framework
-- [TypeScript](https://www.typescriptlang.org) — Language
-- SVG — Chart rendering
-- CSS / SCSS — Styling & animations
-- [Inter](https://fonts.google.com/specimen/Inter) — Typography
+MIT © 2025 Naman
 
 ---
 
-## Author
-
-**Naman** — Frontend Intern Assignment Submission
+<p align="center">
+  Built with ❤️ using pure Angular — no chart libraries harmed
+</p>
