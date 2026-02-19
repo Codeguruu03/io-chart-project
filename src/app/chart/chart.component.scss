@@ -58,7 +58,7 @@
 // ─── Column Chart ─────────────────────────────────────────────────────────────
 .column-chart {
     width: 100%;
-    overflow-x: auto;
+    overflow: visible; // tooltips float above — must not clip or scroll
 }
 
 .column-inner {
@@ -181,6 +181,20 @@
         transform: translateX(-50%);
         border: 4px solid transparent;
         border-top-color: #1e1b4b;
+    }
+}
+
+// Last two bars: anchor tooltip to the right so it doesn't overflow
+.bar-group:last-child .bar-tooltip,
+.bar-group:nth-last-child(2) .bar-tooltip {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(0);
+
+    &::after {
+        left: auto;
+        right: 12px;
+        transform: none;
     }
 }
 
