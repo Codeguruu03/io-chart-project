@@ -91,7 +91,7 @@
     </svg>
 
     <!-- ═══════════════════════════════════════════ Pie Chart -->
-    <div *ngIf="chartOptions?.type === 'pie' && chartOptions?.series?.length" class="pie-wrapper">
+    <div *ngIf="chartOptions.type === 'pie' && chartOptions.series.length" class="pie-wrapper">
         <svg class="pie-chart" viewBox="0 0 300 300" role="img" [attr.aria-label]="chartOptions.title">
 
             <!-- Slices -->
@@ -122,7 +122,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════ Legend -->
-    <div class="legend" *ngIf="chartOptions.series?.length">
+    <div class="legend" *ngIf="chartOptions.series.length">
         <div *ngFor="let item of chartOptions.series" class="legend-item">
             <span class="legend-dot" [style.background]="item.color"></span>
             <span class="legend-name">{{ item.name }}</span>
